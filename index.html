@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task Dashboard</title>
+<style>
+  :root {
+    --bg: #14161b; --card: #1d2129; --card2: #252b36; --line: #313947;
+    --text: #e9e7e0; --dim: #98a1b0; --accent: #e8b44a; --green: #82c982;
+    --red: #e07a6a; --blue: #7aa8d8; --mark: #e8b44a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.55 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 28px 18px 70px; }
+  header { display: flex; justify-content: space-between; align-items: baseline;
+           margin-bottom: 18px; flex-wrap: wrap; gap: 4px; }
+  h1 { font-size: 21px; margin: 0; letter-spacing: .01em; }
+  .date { color: var(--dim); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line);
+          border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+  .card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
+             color: var(--dim); margin: 0 0 10px; font-weight: 600; }
+
+  /* ---- directive ---- */
+  #directive { border-color: var(--accent); border-width: 1px;
+               background: linear-gradient(180deg, #24211a 0%, var(--card) 60%); }
+  #directive h2 { color: var(--accent); }
+  #directive .dtext { font-size: 17px; font-weight: 600; line-height: 1.45; }
+  #directive .dwhy { color: var(--dim); font-size: 13.5px; margin-top: 8px; }
+  #directive .dbody { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 4px;
+                      font-size: 13.5px; }
+  .dbody h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+              color: var(--blue); margin: 12px 0 4px; }
+  .dbody ul, .dbody ol { margin: 4px 0; padding-left: 22px; }
+  .dbody li { margin: 3px 0; }
+  .dbody em { color: var(--dim); }
+
+  /* ---- date tiles ---- */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 640px) { .tiles { grid-template-columns: 1fr; } }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+          padding: 16px 18px; }
+  .tile .label { font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
+                 color: var(--dim); font-weight: 600; }
+  .tile .hours { font: 600 34px/1.15 Consolas, monospace; margin-top: 6px; }
+  .tile .eta { margin-top: 4px; font-size: 14.5px; }
+  .tile .eta b { font-size: 15.5px; }
+  .tile .note { margin-top: 4px; font-size: 13px; color: var(--dim); }
+  .tile .note.ok { color: var(--green); }
+  .tile .note.late { color: var(--red); }
+  .tile .minibar { height: 5px; background: var(--card2); border-radius: 3px; margin-top: 10px; }
+  .tile .minibar > div { height: 100%; background: var(--mark); border-radius: 3px; }
+
+  /* ---- pace ---- */
+  #pace { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+          color: var(--dim); font-size: 13.5px; margin-bottom: 16px; padding: 0 4px; }
+  #pace button { background: var(--card2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 4px 12px; cursor: pointer; font: inherit; font-size: 13.5px; }
+  #pace button.sel { border-color: var(--accent); color: var(--accent); }
+
+  /* ---- sections ---- */
+  .bar { height: 6px; background: var(--card2); border-radius: 3px; margin: 8px 0 2px; }
+  .bar > div { height: 100%; background: var(--green); border-radius: 3px; }
+  details summary { cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  .arrow { color: var(--dim); font-size: 11px; margin-right: 7px; display: inline-block;
+           transition: transform .15s; }
+  details[open] .arrow { transform: rotate(90deg); }
+  .sechead { display: flex; justify-content: space-between; color: var(--dim);
+             font-size: 13px; margin-top: 2px; }
+  .entity { padding: 8px 0 3px; border-top: 1px solid var(--line); margin-top: 8px; }
+  .ename { cursor: pointer; }
+  .ename.alldone { color: var(--dim); text-decoration: line-through; }
+  .enotes { display: none; color: var(--dim); font-size: 13px; white-space: pre-wrap; margin: 4px 0; }
+  .entity.open .enotes { display: block; }
+  .units { margin-top: 4px; }
+  .unit { display: inline-flex; align-items: center; gap: 5px; margin: 0 12px 6px 0;
+          font-size: 13px; color: var(--dim); }
+  .unit input { width: 15px; height: 15px; accent-color: var(--green); cursor: pointer; }
+  .unit.on { color: var(--text); }
+  .dgroup { margin-top: 14px; }
+  .dgroup > .dtitle { color: var(--blue); font-weight: 600; }
+  select { background: var(--card2); color: var(--text); border: 1px solid var(--line);
+           border-radius: 6px; padding: 3px 6px; font: inherit; font-size: 13px; }
+  .feat { display: flex; gap: 10px; align-items: baseline; padding: 7px 0;
+          border-top: 1px solid var(--line); }
+  .feat:first-of-type { border-top: none; }
+  .feat .fname { flex: 1; cursor: pointer; }
+  .feat.done .fname { color: var(--dim); text-decoration: line-through; }
+  .chip { display: inline-block; font-size: 11px; color: var(--dim); white-space: nowrap;
+          border: 1px solid var(--line); border-radius: 10px; padding: 0 8px; }
+  .chip.mark { color: var(--mark); border-color: var(--mark); }
+  #summary { color: var(--dim); font-size: 13px; }
+  #summary b { color: var(--text); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title">Task Dashboard</h1>
+    <div class="date" id="date"></div>
+  </header>
+
+  <div class="card" id="directive" style="display:none">
+    <h2>&#9654; Do this now</h2>
+    <div class="dtext" id="dtext"></div>
+    <div class="dwhy" id="dwhy"></div>
+    <div class="dbody" id="dbody"></div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile">
+      <div class="label" id="msLabel">Milestone</div>
+      <div class="hours" id="msHours">&mdash;</div>
+      <div class="eta" id="msEta"></div>
+      <div class="note" id="msNote"></div>
+      <div class="minibar"><div id="msBar"></div></div>
+    </div>
+    <div class="tile">
+      <div class="label">Everything</div>
+      <div class="hours" id="fullHours">&mdash;</div>
+      <div class="eta" id="fullEta"></div>
+      <div class="note" id="fullNote"></div>
+    </div>
+  </div>
+
+  <div id="pace"></div>
+
+  <div id="sections"></div>
+
+  <div class="card"><details><summary><span class="arrow">&#9654;</span>About / where you are</summary>
+    <div id="summary"></div></details></div>
+</main>
+
+<script>
+let S = null;
+let rate = Number(localStorage.getItem("dash_rate") || 4);   // focused hours/day
+
+async function api(path, body) {
+  const res = await fetch(path, body ? { method: "POST",
+    headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  S = await res.json();
+  render();
+}
+
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+function inline(t) {
+  return esc(t)
+    .replace(/\[\[(.+?)\]\]/g, "$1")
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>");
+}
+
+function mdLite(t) {
+  const out = [];
+  let list = null;                      // "ul" | "ol" | null
+  const close = () => { if (list) { out.push("</" + list + ">"); list = null; } };
+  for (const raw of t.split("\n")) {
+    const line = raw.trim();
+    let m;
+    if ((m = line.match(/^##+\s+(.*)/))) { close(); out.push("<h3>" + inline(m[1]) + "</h3>"); }
+    else if ((m = line.match(/^[-*]\s+(.*)/))) {
+      if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; }
+      out.push("<li>" + inline(m[1]) + "</li>");
+    } else if ((m = line.match(/^\d+\.\s+(.*)/))) {
+      if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; }
+      out.push("<li>" + inline(m[1]) + "</li>");
+    } else if (line) { close(); out.push("<p>" + inline(line) + "</p>"); }
+    else close();
+  }
+  close();
+  return out.join("");
+}
+
+function unitBox(e, u) {
+  const on = e.done.includes(u);
+  return `<label class="unit ${on ? "on" : ""}"><input type="checkbox" ${on ? "checked" : ""}
+    onchange="api('/api/unit',{id:'${e.id}',unit:'${u}',done:this.checked})">${esc(u)}</label>`;
+}
+
+function entityRow(e) {
+  const all = e.done.length === e.units.length;
+  return `<div class="entity">
+    <span class="ename ${all ? "alldone" : ""}"
+      onclick="this.closest('.entity').classList.toggle('open')">${all ? "&#10003; " : ""}${esc(e.name)}</span>
+    ${e.milestone ? `<span class="chip mark">${esc(S.milestone_label)}</span>` : ""}
+    <div class="enotes">${esc(e.notes)}</div>
+    <div class="units">${e.units.map(u => unitBox(e, u)).join("")}</div>
+  </div>`;
+}
+
+function project(hoursLeft, perDay) {
+  const days = Math.ceil(hoursLeft / perDay);
+  const eta = new Date(S.date + "T12:00");
+  eta.setDate(eta.getDate() + days);
+  return { days, eta,
+    str: eta.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) };
+}
+
+function render() {
+  document.title = S.project_name;
+  document.getElementById("title").textContent = S.project_name;
+  document.getElementById("date").textContent =
+    new Date(S.date + "T12:00").toLocaleDateString(undefined,
+      { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+
+  // ---- directive ----
+  const d = S.directive;
+  const dc = document.getElementById("directive");
+  if (d && d.directive) {
+    dc.style.display = "";
+    document.getElementById("dtext").innerHTML = inline(d.directive);
+    document.getElementById("dwhy").innerHTML = d.why ? "Why: " + inline(d.why) : "";
+    document.getElementById("dbody").innerHTML = mdLite(d.body || "");
+  } else dc.style.display = "none";
+
+  // ---- pace: measured velocity wins, else the chosen rate ----
+  const v = S.velocity;
+  const perDay = v ? v.hours_per_day : rate;
+
+  // ---- tiles ----
+  const msH = S.milestone_minutes_left / 60, fullH = S.total_minutes_left / 60;
+  const deadline = new Date(S.deadline + "T12:00");
+  const deadlineDays = Math.round((deadline - new Date(S.date + "T12:00")) / 86400000);
+
+  document.getElementById("msLabel").textContent =
+    `${S.milestone_label} · ${S.deadline_name} checkpoint`;
+  document.getElementById("msHours").textContent = msH.toFixed(0) + " h";
+  const dp = project(msH, perDay);
+  document.getElementById("msEta").innerHTML = `ready around <b>${dp.str}</b>`;
+  const buffer = Math.round((deadline - dp.eta) / 86400000);
+  const dn = document.getElementById("msNote");
+  dn.className = "note " + (buffer >= 0 ? "ok" : "late");
+  dn.textContent = buffer >= 0
+    ? `${buffer} days of buffer before ${S.deadline_name} (${deadlineDays} days away)`
+    : `${-buffer} days PAST ${S.deadline_name}, milestone at risk`;
+  const pct = S.milestone_units_total ? Math.round(100 * S.milestone_units_done / S.milestone_units_total) : 0;
+  document.getElementById("msBar").style.width = pct + "%";
+
+  document.getElementById("fullHours").textContent = fullH.toFixed(0) + " h";
+  const fp = project(fullH, perDay);
+  document.getElementById("fullEta").innerHTML = `done around <b>${fp.str}</b>`;
+  document.getElementById("fullNote").textContent =
+    `${fp.days} days at ${perDay} focused h/day`;
+
+  // ---- pace row ----
+  document.getElementById("pace").innerHTML = v
+    ? `<span>Pace: <b style="color:var(--text)">${v.hours_per_day} h/day measured</b>
+       (${v.actual_hours}h logged over last ${v.window_days} days, ${v.entries} items;
+       projections use the measured pace)</span>`
+    : `<span>No logged velocity yet, so projections use your pick:</span>` +
+      [2, 4, 6, 8].map(r =>
+        `<button class="${r === rate ? "sel" : ""}"
+          onclick="rate=${r};localStorage.setItem('dash_rate',${r});render()">${r} h/day</button>`).join("");
+
+  // ---- sections ----
+  let html = "";
+  for (const [key, sec] of Object.entries(S.sections)) {
+    const pct = sec.units_total ? Math.round(100 * sec.units_done / sec.units_total) : 0;
+    let bodyHtml = "";
+    const inSection = S.production.filter(e => e.section === key);
+    if (key === "features") {
+      bodyHtml = S.features.map(t => `<div class="feat ${t.status === "done" ? "done" : ""}">
+        <span class="fname" onclick="alert(${JSON.stringify(esc(t.notes)).replace(/"/g, "&quot;")})">${esc(t.name)}</span>
+        ${t.milestone ? `<span class="chip mark">${esc(S.milestone_label)}</span>` : ""}
+        <span class="chip">${t.area}</span><span class="chip">${esc(String(t.estimate))}</span>
+        <select onchange="api('/api/status',{id:'${t.id}',status:this.value})">
+          ${["todo", "in-progress", "blocked", "done"].map(s =>
+            `<option ${s === t.status ? "selected" : ""}>${s}</option>`).join("")}
+        </select></div>`).join("");
+    } else if (inSection.some(e => e.group != null)) {
+      // entities that share a numeric `group:` render together
+      const byG = {};
+      for (const e of inSection) (byG[e.group ?? 0] = byG[e.group ?? 0] || []).push(e);
+      bodyHtml = Object.keys(byG).sort((a, b) => a - b).map(g => {
+        const es = byG[g];
+        const env = es.find(e => e.type === "environment");
+        const title = env ? env.name.replace(/\s*[-—]\s*environment$/i, "") : "Group " + g;
+        return `<div class="dgroup"><div class="dtitle">${esc(title)}</div>
+          ${es.map(entityRow).join("")}</div>`;
+      }).join("");
+    } else {
+      bodyHtml = inSection.map(entityRow).join("");
+    }
+    html += `<div class="card"><details>
+      <summary><span class="arrow">&#9654;</span>
+        <b>${esc(S.section_labels[key] || key)}</b>
+        <div class="sechead"><span>${sec.units_done} / ${sec.units_total} units</span>
+          <span>&asymp; ${(sec.minutes_left / 60).toFixed(0)} h left</span></div>
+        <div class="bar"><div style="width:${pct}%"></div></div>
+      </summary>${bodyHtml}</details></div>`;
+  }
+  document.getElementById("sections").innerHTML = html;
+
+  document.getElementById("summary").innerHTML = mdLite(S.summary);
+}
+
+api("/api/state");
+</script>
+</body>
+</html>
