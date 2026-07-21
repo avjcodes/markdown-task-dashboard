@@ -1,5 +1,7 @@
 # markdown-task-dashboard
 
+![tests](https://github.com/avjcodes/markdown-task-dashboard/actions/workflows/ci.yml/badge.svg)
+
 A local dashboard for solo projects with a real deadline. Your tasks are plain markdown files; this reads them and turns them into a countdown clock: estimated hours remaining, a projected finish date at your actual pace, and how that lands against the date you're aiming for.
 
 Python standard library only. No installs, no database, no build step, no accounts. One Python file, one HTML file, and a folder of notes you already own.
@@ -70,6 +72,14 @@ Everything lives in one block at the top of `app.py`:
 ## Using this template
 
 Click "Use this template" on GitHub (or fork it), delete the sample notes, write your own, set your deadline. That's the whole setup.
+
+## Development
+
+```
+python -m unittest discover -s tests
+```
+
+The suite covers the frontmatter parser, the effort math, the velocity window, and the writeback rules. The writeback tests are the ones that matter: this tool edits notes you own, so there are tests proving a checkbox click changes exactly one line and nothing else.
 
 ## License
 
