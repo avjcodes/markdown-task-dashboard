@@ -15,7 +15,7 @@ import app
 ENTITY = """---
 id: monster-01
 type: monster
-name: "Cave Bat"
+name: "Rust Golem"
 units: [design, idle, attack]
 done: [design]
 milestone: true
@@ -80,7 +80,7 @@ class TestFrontmatter(unittest.TestCase):
     def test_parse_value_lists_and_scalars(self):
         self.assertEqual(app._parse_value("[a, b, c]"), ["a", "b", "c"])
         self.assertEqual(app._parse_value("[]"), [])
-        self.assertEqual(app._parse_value('"Cave Bat"'), "Cave Bat")
+        self.assertEqual(app._parse_value('"Rust Golem"'), "Rust Golem")
         self.assertEqual(app._parse_value("plain"), "plain")
 
     def test_read_frontmatter_crlf(self):

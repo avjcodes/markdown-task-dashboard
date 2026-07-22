@@ -1,7 +1,7 @@
 ---
 id: env-01
 type: environment
-name: "Mossy Cavern - environment"
+name: "Sunken Library - environment"
 group: 1
 units: [floor, backdrop]
 done: [floor]

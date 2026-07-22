@@ -30,7 +30,7 @@ The other rule: the dashboard never owns your data. Notes are ordinary markdown 
 ---
 id: monster-01
 type: monster
-name: "Cave Bat"
+name: "Rust Golem"
 group: 1                # optional: entities sharing a group render together
 units: [design, idle, attack, hurt, death]
 done: [design, idle]
